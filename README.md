@@ -34,6 +34,38 @@ To install Auto-Commit globally, run:
 npm install -g auto-commit
 ```
 
+or if you prefer yarn:
+
+```bash
+yarn global add auto-commit
+```
+
+### Adding to PATH
+
+After installing globally, you need to ensure that the npm or yarn global bin directory is in your PATH environment variable.
+
+For npm:
+
+```bash
+export PATH="$PATH:$(npm config get prefix)/bin"
+```
+
+For yarn:
+
+```bash
+export PATH="$PATH:$(yarn global bin)"
+```
+
+To make this change permanent, add the appropriate line to your shell configuration file (e.g., `~/.bashrc`, `~/.zshrc`, or `~/.profile`).
+
+## Configuration
+
+Auto-Commit requires an OpenAI API key to function. Set your API key as an environment variable:
+
+```bash
+export OPENAI_API_KEY=your_api_key_here
+```
+
 ## Usage
 
 After installation, you can use the `auto-commit` command in your terminal:
@@ -66,14 +98,6 @@ auto-commit [options] [path]
    ```bash
    auto-commit -e "file1.js,file2.js"
    ```
-
-## Configuration
-
-Auto-Commit requires an OpenAI API key to function. Set your API key as an environment variable:
-
-```bash
-export OPENAI_API_KEY=your_api_key_here
-```
 
 ### Git Integration
 

@@ -1,6 +1,6 @@
 {
   "name": "@jenssegers/auto-commit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI tool to automatically generate commit messages using ChatGPT",
   "keywords": [
     "cli",

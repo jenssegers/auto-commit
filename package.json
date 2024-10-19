@@ -1,9 +1,9 @@
 {
   "name": "@jenssegers/auto-commit",
   "version": "1.0.0",
-  "description": "",
+  "description": "A CLI tool to automatically generate commit messages using ChatGPT",
   "license": "ISC",
-  "author": "",
+  "author": "Jens Segers",
   "main": "dist/index.js",
   "bin": "dist/index.js",
   "scripts": {

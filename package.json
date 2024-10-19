@@ -1,0 +1,40 @@
+{
+  "name": "auto-commit",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "pkg": "yarn run build && pkg . --targets node18-macos-arm64 --debug --public-packages '*'",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^22.7.7",
+    "cli-spinner": "^0.2.10",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "inquirer": "^12.0.0",
+    "openai": "^4.68.1",
+    "simple-git": "^3.27.0"
+  },
+  "devDependencies": {
+    "@types/cli-spinner": "^0.2.3",
+    "@types/commander": "^2.12.2",
+    "pkg": "^5.8.1",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
+  "pkg": {
+    "outputPath": "bin",
+    "patches": {
+      "./node_modules/openai/_shims/index.js": [
+        "require('openai/_shims/auto/runtime')",
+        "require('openai/_shims/node-runtime')"
+      ]
+    }
+  }
+}

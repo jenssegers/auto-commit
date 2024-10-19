@@ -2,6 +2,17 @@
   "name": "@jenssegers/auto-commit",
   "version": "1.0.0",
   "description": "A CLI tool to automatically generate commit messages using ChatGPT",
+  "keywords": [
+    "cli",
+    "commit",
+    "git",
+    "auto-commit",
+    "commit-message",
+    "chatgpt",
+    "ai",
+    "automation",
+    "developer-tools"
+  ],
   "license": "ISC",
   "author": "Jens Segers",
   "main": "dist/index.js",
@@ -9,6 +20,7 @@
   "scripts": {
     "build": "tsc",
     "pkg": "yarn run build && pkg . --targets node18-macos-arm64 --debug --public-packages '*'",
+    "prepublishOnly": "yarn run build",
     "start": "tsx src/index.ts"
   },
   "dependencies": {

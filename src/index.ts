@@ -47,7 +47,7 @@ function generatePrompt(
       prompt = `Analyze the following git diff and suggest an appropriate gitmoji (in :emoji: format) prefix and a short, clear git commit message without a conventional commits prefix:`;
       break;
     case 'conventional':
-      prompt = `Analyze the following git diff and suggest an appropriate conventional commits prefix and a short, clear git commit message. Include an exclemation mark if there are breaking changes and optionally include a scope in the conventional commits prefix if the changes are related to a specific part of the codebase.`;
+      prompt = `Analyze the following git diff and suggest an appropriate conventional commits prefix (build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test) and a short, clear git commit message. Include an exclemation mark if there are breaking changes and optionally include a scope in the conventional commits prefix if the changes are related to a specific part of the codebase.`;
       break;
   }
 

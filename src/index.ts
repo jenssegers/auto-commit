@@ -18,7 +18,7 @@ const openai = new OpenAI({
 const program = new Command();
 
 program
-  .name('git-diff')
+  .name('auto-commit')
   .description('Auto generate git commits')
   .argument('[path]', 'Path to the git repository', process.cwd())
   .option(

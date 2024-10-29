@@ -18,7 +18,7 @@ const openai = new openai_1.default({
 });
 const program = new commander_1.Command();
 program
-    .name('git-diff')
+    .name('auto-commit')
     .description('Auto generate git commits')
     .argument('[path]', 'Path to the git repository', process.cwd())
     .option('-e, --exclude <files>', 'Files to exclude from the diff', 'package-lock.json,yarn.lock')

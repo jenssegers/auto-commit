@@ -31,10 +31,59 @@ function generatePrompt(diff, style) {
     let prompt = '';
     switch (style) {
         case 'gitmoji':
-            prompt = `Analyze the following git diff and suggest an appropriate gitmoji (in :emoji: format) prefix and a short, clear git commit message without a conventional commits prefix:`;
+            prompt = `Analyze the following git diff and suggest an appropriate gitmoji commit message and description of the change following these rules:
+
+1. Format: <intention> [scope?][:?] <message>
+   - intention: Use an emoji from the official gitmoji list (in :shortcode: format)
+   - scope: Optional context in parentheses
+   - message: Clear description of the change
+
+2. Common gitmoji types:
+   - :art: Improve structure/format of code
+   - :zap: Improve performance
+   - :bug: Fix a bug
+   - :sparkles: Introduce new features
+   - :recycle: Refactor code
+   - :memo: Add or update documentation
+   - :wrench: Add or update configuration files
+   - :fire: Remove code or files
+   - :boom: Introduce breaking changes
+   - :lipstick: Add or update UI and style files
+   - :test_tube: Add a failing test
+   - :white_check_mark: Add, update, or pass tests
+
+3. Message must:
+   - Be clear and concise
+   - Start with a capital letter
+   - Not end with a period
+
+Examples:
+- ⚡️ Lazyload home screen images
+- 🐛 Fix onClick event handler
+- ♻️ (components) Transform classes to hooks
+- 📈 Add analytics to dashboard
+- 🌐 Support Japanese language`;
             break;
         case 'conventional':
-            prompt = `Analyze the following git diff and suggest an appropriate conventional commits prefix (must be one of: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test) and a short, clear git commit message. Include an exclemation mark if there are breaking changes and optionally include a scope in the conventional commits prefix if the changes are related to a specific part of the codebase.`;
+            prompt = `Analyze the following git diff and suggest an appropriate conventional commit message and description of the change following these rules:
+
+1. Type must be one of: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
+2. Type must be lowercase
+3. Add a scope in parentheses if changes relate to a specific component (optional)
+4. Add ! after the type/scope to indicate breaking changes
+5. Description must:
+   - Start with lowercase
+   - Not end with a period
+   - Be concise and clear
+   - Be no longer than 100 characters in total
+6. If there are breaking changes, include "BREAKING CHANGE: " in the footer
+
+Examples:
+- feat: add user authentication
+- fix(api): resolve data parsing issue
+- feat(auth)!: change login flow
+- refactor: simplify error handling
+- docs(readme): update installation steps`;
             break;
     }
     return (prompt +
@@ -50,7 +99,8 @@ Return 4 different responses and return them in JSON format array with each resp
     "responses": [
         {
             "prefix": "[suggested ${style} prefix]",
-            "message": "[short and clear commit message]"
+            "message": "[short and clear commit message]",
+            "description": "[description of the change]"
         },
         ...
     ]
@@ -64,7 +114,7 @@ async function getChatGPTResponse(prompt) {
         response_format: { type: 'json_object' },
     });
     const jsonResponse = JSON.parse(response.choices[0].message.content || '{}');
-    return jsonResponse.responses.map((item) => `${style == 'conventional' ? item.prefix + ':' : item.prefix} ${item.message.charAt(0).toUpperCase() + item.message.slice(1)}`);
+    return jsonResponse.responses;
 }
 async function selectCommitMessage(choices) {
     const { selected } = await inquirer_1.default.prompt([
@@ -72,7 +122,10 @@ async function selectCommitMessage(choices) {
             type: 'list',
             name: 'selected',
             message: 'Select your commit message:',
-            choices,
+            choices: choices.map((item, index) => ({
+                name: `${style === 'conventional' ? item.prefix + ':' : item.prefix} ${item.message}`,
+                value: item,
+            })),
         },
     ]);
     return selected;
@@ -105,7 +158,10 @@ async function main() {
         readline_1.default.clearLine(process.stdout, 0);
         readline_1.default.cursorTo(process.stdout, 0);
         // Let the user select the preferred commit message
-        const message = await selectCommitMessage(chatGPTResponses);
+        const selected = await selectCommitMessage(chatGPTResponses);
+        const message = `${style === 'conventional' ? selected.prefix + ':' : selected.prefix} ${selected.message}
+
+${selected.description}`;
         // Execute git commit with the selected message
         try {
             (0, child_process_1.execSync)(`git commit -e -m "${message}"`, { stdio: 'inherit' });

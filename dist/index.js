@@ -93,7 +93,7 @@ Examples:
 ${diff}
 \`\`\`
 
-Return 4 different responses and return them in JSON format array with each response having the following format:
+Return a minimum of 1 and a maximum of 4 different responses and return them in JSON format array with each response having the following format:
 
 {
     "responses": [

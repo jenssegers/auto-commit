@@ -18,8 +18,7 @@
   "main": "dist/index.js",
   "bin": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "pkg": "yarn run build && pkg . --targets node18-macos-arm64 --debug --public-packages '*'",
+    "build": "tsc && pkg . --targets node18-macos-arm64 --debug --public-packages '*'",
     "prepublishOnly": "yarn run build",
     "start": "tsx src/index.ts"
   },
@@ -27,17 +26,17 @@
     "cli-spinner": "^0.2.10",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
-    "inquirer": "^12.0.1",
-    "openai": "^4.68.4",
+    "inquirer": "^12.1.0",
+    "openai": "^4.73.1",
     "simple-git": "^3.27.0"
   },
   "devDependencies": {
     "@types/cli-spinner": "^0.2.3",
     "@types/commander": "^2.12.5",
-    "@types/node": "^22.8.3",
+    "@types/node": "^22.10.1",
     "pkg": "^5.8.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
   "pkg": {

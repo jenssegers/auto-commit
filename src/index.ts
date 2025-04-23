@@ -31,6 +31,11 @@ program
     'Choose between "gitmoji" or "conventional"',
     'conventional',
   )
+  .option(
+    '-m, --model <model>',
+    'An OpenAI model such "gpt-4.1-nano" or "gpt-4o-mini"',
+    'gpt-4.1-nano',
+  )
   .parse(process.argv);
 
 const path = program.args[0] || process.cwd();
@@ -91,6 +96,19 @@ Examples:
    - Be no longer than 100 characters in total
 6. If there are breaking changes, include "BREAKING CHANGE: " in the footer
 
+Type guidelines:
+  - feat: new feature or significant enhancement
+  - fix: bug fix
+  - docs: documentation changes only
+  - style: formatting, missing semi-colons, etc; no code change
+  - refactor: code change that neither fixes a bug nor adds a feature
+  - perf: code change that improves performance
+  - test: adding/updating tests
+  - build: changes affecting build system or dependencies
+  - ci: changes to CI configuration files and scripts
+  - chore: other changes that don't modify src or test files
+  - revert: reverts a previous commit
+
 Examples:
 - feat: add user authentication
 - fix(api): resolve data parsing issue
@@ -128,7 +146,7 @@ async function getChatGPTResponse(
   prompt: string,
 ): Promise<Array<{ prefix: string; message: string; description: string }>> {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: program.opts().model,
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
   });

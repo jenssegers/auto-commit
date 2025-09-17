@@ -9,7 +9,7 @@ import OpenAI from 'openai';
 import readline from 'readline';
 import simpleGit from 'simple-git';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

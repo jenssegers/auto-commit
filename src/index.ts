@@ -33,8 +33,8 @@ program
   )
   .option(
     '-m, --model <model>',
-    'An OpenAI model such "gpt-4.1-nano" or "gpt-4o-mini"',
-    'gpt-4.1-nano',
+    'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"',
+    'gpt-5-nano',
   )
   .parse(process.argv);
 
@@ -85,16 +85,17 @@ Examples:
     case 'conventional':
       prompt = `Analyze the following git diff and suggest an appropriate conventional commit message and description of the change following these rules:
 
-1. Type must be one of: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
-2. Type must be lowercase
-3. Add a scope in parentheses if changes relate to a specific component (optional)
-4. Add ! after the type/scope to indicate breaking changes
-5. Description must:
+1. Format: <type>[optional scope][!]: <description>
+2. Type must be one of: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
+3. Type must be lowercase
+4. Add a scope in parentheses if changes relate to a specific component (optional)
+5. Add ! after the type/scope to indicate breaking changes
+6. Description must:
    - Start with lowercase
    - Not end with a period
    - Be concise and clear
    - Be no longer than 100 characters in total
-6. If there are breaking changes, include "BREAKING CHANGE: " in the footer
+7. If there are breaking changes, include "BREAKING CHANGE: " in the footer
 
 Type guidelines:
   - feat: new feature or significant enhancement
@@ -131,8 +132,8 @@ Return a minimum of 1 and a maximum of 4 different responses and return them in 
 {
     "responses": [
         {
-            "prefix": "[suggested ${style} prefix]",
-            "message": "[short and clear commit message]",
+            "prefix": "[type including the scope without the colon]",
+            "message": "[field should contain the description]",
             "description": "[description of the change]"
         },
         ...
@@ -213,7 +214,9 @@ async function main() {
     // Let the user select the preferred commit message
     const selected = await selectCommitMessage(chatGPTResponses);
     const message = `${
-      style === 'conventional' ? selected.prefix + ':' : selected.prefix
+      style === 'conventional'
+        ? selected.prefix.split(':')[0] + ':'
+        : selected.prefix
     } ${selected.message}
 
 ${selected.description}`;

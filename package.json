@@ -24,19 +24,19 @@
   },
   "dependencies": {
     "cli-spinner": "^0.2.10",
-    "commander": "^13.1.0",
-    "dotenv": "^16.5.0",
-    "inquirer": "^12.5.2",
-    "openai": "^4.95.1",
-    "simple-git": "^3.27.0"
+    "commander": "^14.0.1",
+    "dotenv": "^16.6.1",
+    "inquirer": "^12.9.6",
+    "openai": "^5.20.3",
+    "simple-git": "^3.28.0"
   },
   "devDependencies": {
     "@types/cli-spinner": "^0.2.3",
     "@types/commander": "^2.12.5",
-    "@types/node": "^22.14.1",
+    "@types/node": "^24.5.1",
     "pkg": "^5.8.1",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   },
   "pkg": {
     "outputPath": "bin",
@@ -46,8 +46,5 @@
         "require('openai/_shims/node-runtime')"
       ]
     }
-  },
-  "overrides": {
-    "whatwg-url": "14.1.0"
   }
 }

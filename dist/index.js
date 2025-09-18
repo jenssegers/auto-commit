@@ -23,7 +23,7 @@ program
     .argument('[path]', 'Path to the git repository', process.cwd())
     .option('-e, --exclude <files>', 'Files to exclude from the diff', 'package-lock.json,yarn.lock')
     .option('-s, --style <style>', 'Choose between "gitmoji" or "conventional"', 'conventional')
-    .option('-m, --model <model>', 'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"', 'gpt-5-nano')
+    .option('-m, --model <model>', 'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"', 'gpt-4.1-nano')
     .parse(process.argv);
 const path = program.args[0] || process.cwd();
 const excludedFiles = program.opts().exclude.split(',');

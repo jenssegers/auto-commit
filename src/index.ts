@@ -34,7 +34,7 @@ program
   .option(
     '-m, --model <model>',
     'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"',
-    'gpt-5-nano',
+    'gpt-4.1-nano',
   )
   .parse(process.argv);
 

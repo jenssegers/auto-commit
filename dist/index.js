@@ -13,6 +13,11 @@ const openai_1 = __importDefault(require("openai"));
 const readline_1 = __importDefault(require("readline"));
 const simple_git_1 = __importDefault(require("simple-git"));
 dotenv_1.default.config({ quiet: true });
+// Constants
+const MAX_DIFF_LENGTH = 28000;
+const DEFAULT_MODEL = 'gpt-4.1-nano';
+const DEFAULT_EXCLUDED_FILES = 'package-lock.json,yarn.lock';
+// Configuration
 const openai = new openai_1.default({
     apiKey: process.env.OPENAI_API_KEY,
 });
@@ -21,11 +26,41 @@ program
     .name('auto-commit')
     .description('Auto generate git commits')
     .argument('[path]', 'Path to the git repository', process.cwd())
-    .option('-e, --exclude <files>', 'Files to exclude from the diff', 'package-lock.json,yarn.lock')
-    .option('-m, --model <model>', 'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"', 'gpt-4.1-nano')
+    .option('-e, --exclude <files>', 'Files to exclude from the diff', DEFAULT_EXCLUDED_FILES)
+    .option('-m, --model <model>', 'An OpenAI model such "gpt-4.1-nano" or "gpt-5-nano"', DEFAULT_MODEL)
     .parse(process.argv);
-const path = program.args[0] || process.cwd();
-const excludedFiles = program.opts().exclude.split(',');
+const config = {
+    path: program.args[0] || process.cwd(),
+    excludedFiles: program.opts().exclude.split(','),
+    model: program.opts().model,
+};
+// Formatting helpers
+function formatCommitMessage(commit) {
+    const scope = commit.scope ? `(${commit.scope})` : '';
+    const breaking = commit.breaking ? '!' : '';
+    const subject = `${commit.type}${scope}${breaking}: ${commit.description}`;
+    return commit.body ? `${subject}\n\n${commit.body}` : subject;
+}
+function formatCommitChoice(commit) {
+    const scope = commit.scope ? `(${commit.scope})` : '';
+    const breaking = commit.breaking ? '!' : '';
+    return `${commit.type}${scope}${breaking}: ${commit.description}`;
+}
+// Git operations
+async function getGitDiff(repoPath, excludedFiles) {
+    const git = (0, simple_git_1.default)(repoPath);
+    const diffArgs = ['--staged', '--', ...excludedFiles.map((file) => `:!${file}`)];
+    const diff = await git.diff(diffArgs);
+    const status = await git.status();
+    return {
+        diff: diff.trim(),
+        stagedFiles: status.staged || [],
+    };
+}
+function commitChanges(message) {
+    (0, child_process_1.execSync)(`git commit -e -m "${message}"`, { stdio: 'inherit' });
+}
+// AI operations
 function generatePrompt(diffData) {
     return `Analyze the following git diff and suggest 1-4 conventional commit messages following the Conventional Commits specification (v1.0.0).
 
@@ -127,16 +162,14 @@ ${diffData.diff}
 \`\`\`
 `;
 }
-async function getChatGPTResponse(prompt) {
+async function generateCommitSuggestions(prompt, model) {
     if (process.env.DEBUG) {
         console.log('\n=== Prompt ===');
         console.log(prompt);
     }
     const response = await openai.chat.completions.create({
-        model: program.opts().model,
-        messages: [
-            { role: 'user', content: prompt },
-        ],
+        model,
+        messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
         temperature: 0.7,
         max_tokens: 2000,
@@ -159,78 +192,54 @@ async function getChatGPTResponse(prompt) {
     }
     return jsonResponse.responses;
 }
-async function selectCommitMessage(choices) {
+// UI operations
+async function selectCommitMessage(commits) {
     const { selected } = await inquirer_1.default.prompt([
         {
             type: 'list',
             name: 'selected',
             message: 'Select your commit message:',
-            choices: choices.map((item) => {
-                const scopePart = item.scope ? `(${item.scope})` : '';
-                const breakingPart = item.breaking ? '!' : '';
-                return {
-                    name: `${item.type}${scopePart}${breakingPart}: ${item.description}`,
-                    value: item,
-                };
-            }),
+            choices: commits.map((commit) => ({
+                name: formatCommitChoice(commit),
+                value: commit,
+            })),
         },
     ]);
     return selected;
 }
-async function getGitDiff(repoPath) {
-    const git = (0, simple_git_1.default)(repoPath);
-    const diffArgs = [
-        '--staged',
-        '--',
-        ...excludedFiles.map((file) => `:!${file}`),
-    ];
-    const diff = await git.diff(diffArgs);
-    const status = await git.status();
-    const stagedFiles = status.staged || [];
-    return {
-        diff: diff.trim(),
-        stagedFiles,
-    };
-}
-async function main() {
+async function withSpinner(task) {
+    const spinner = new cli_spinner_1.Spinner('%s Loading...');
+    spinner.setSpinnerString(18);
+    spinner.start();
     try {
-        const diffData = await getGitDiff(path);
-        if (diffData.diff === '') {
-            console.error('No staged changes found.');
-            return;
-        }
-        const maxDiffLength = 28000;
-        if (diffData.diff.length > maxDiffLength) {
-            console.error(`Error: Diff is too large (${diffData.diff.length} characters, max ${maxDiffLength}).`);
-            console.error('Please commit changes in smaller, focused chunks.');
-            process.exit(1);
-        }
-        const spinner = new cli_spinner_1.Spinner('%s Loading...');
-        spinner.setSpinnerString(18);
-        spinner.start();
-        // Generate the ChatGPT prompt
-        const chatGPTPrompt = generatePrompt(diffData);
-        // Get responses from ChatGPT
-        const chatGPTResponses = await getChatGPTResponse(chatGPTPrompt);
+        return await task;
+    }
+    finally {
         spinner.stop();
         readline_1.default.clearLine(process.stdout, 0);
         readline_1.default.cursorTo(process.stdout, 0);
-        // Let the user select the preferred commit message
-        const selected = await selectCommitMessage(chatGPTResponses);
-        const scopePart = selected.scope ? `(${selected.scope})` : '';
-        const breakingPart = selected.breaking ? '!' : '';
-        const message = selected.body
-            ? `${selected.type}${scopePart}${breakingPart}: ${selected.description}
-
-${selected.body}`
-            : `${selected.type}${scopePart}${breakingPart}: ${selected.description}`;
-        // Execute git commit with the selected message
-        try {
-            (0, child_process_1.execSync)(`git commit -e -m "${message}"`, { stdio: 'inherit' });
-        }
-        catch (error) {
-            console.error('Failed to commit:', error);
-        }
+    }
+}
+// Validation
+function validateDiff(diff) {
+    if (!diff) {
+        throw new Error('No staged changes found.');
+    }
+    if (diff.length > MAX_DIFF_LENGTH) {
+        throw new Error(`Diff is too large (${diff.length} characters, max ${MAX_DIFF_LENGTH}).\n` +
+            'Please commit changes in smaller, focused chunks.');
+    }
+}
+// Main
+async function main() {
+    try {
+        const diffData = await getGitDiff(config.path, config.excludedFiles);
+        validateDiff(diffData.diff);
+        const prompt = generatePrompt(diffData);
+        const suggestions = await withSpinner(generateCommitSuggestions(prompt, config.model));
+        const selected = await selectCommitMessage(suggestions);
+        const message = formatCommitMessage(selected);
+        commitChanges(message);
     }
     catch (error) {
         console.error('Error:', error.message);

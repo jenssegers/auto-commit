@@ -13,11 +13,9 @@ const openai_1 = __importDefault(require("openai"));
 const readline_1 = __importDefault(require("readline"));
 const simple_git_1 = __importDefault(require("simple-git"));
 dotenv_1.default.config({ quiet: true });
-// Constants
 const MAX_DIFF_LENGTH = 28000;
 const DEFAULT_MODEL = 'gpt-4.1-nano';
 const DEFAULT_EXCLUDED_FILES = 'package-lock.json,yarn.lock';
-// Configuration
 const openai = new openai_1.default({
     apiKey: process.env.OPENAI_API_KEY,
 });
@@ -34,7 +32,6 @@ const config = {
     excludedFiles: program.opts().exclude.split(','),
     model: program.opts().model,
 };
-// Formatting helpers
 function formatCommitMessage(commit) {
     const scope = commit.scope ? `(${commit.scope})` : '';
     const breaking = commit.breaking ? '!' : '';
@@ -46,7 +43,6 @@ function formatCommitChoice(commit) {
     const breaking = commit.breaking ? '!' : '';
     return `${commit.type}${scope}${breaking}: ${commit.description}`;
 }
-// Git operations
 async function getGitDiff(repoPath, excludedFiles) {
     const git = (0, simple_git_1.default)(repoPath);
     const diffArgs = ['--staged', '--', ...excludedFiles.map((file) => `:!${file}`)];
@@ -60,7 +56,6 @@ async function getGitDiff(repoPath, excludedFiles) {
 function commitChanges(message) {
     (0, child_process_1.execSync)(`git commit -e -m "${message}"`, { stdio: 'inherit' });
 }
-// AI operations
 function generatePrompt(diffData) {
     return `Analyze the following git diff and suggest 1-4 conventional commit messages following the Conventional Commits specification (v1.0.0).
 
@@ -192,7 +187,6 @@ async function generateCommitSuggestions(prompt, model) {
     }
     return jsonResponse.responses;
 }
-// UI operations
 async function selectCommitMessage(commits) {
     const { selected } = await inquirer_1.default.prompt([
         {
@@ -220,7 +214,6 @@ async function withSpinner(task) {
         readline_1.default.cursorTo(process.stdout, 0);
     }
 }
-// Validation
 function validateDiff(diff) {
     if (!diff) {
         throw new Error('No staged changes found.');
@@ -230,7 +223,6 @@ function validateDiff(diff) {
             'Please commit changes in smaller, focused chunks.');
     }
 }
-// Main
 async function main() {
     try {
         const diffData = await getGitDiff(config.path, config.excludedFiles);

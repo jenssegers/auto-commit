@@ -17,9 +17,13 @@
   "author": "Jens Segers",
   "main": "dist/index.js",
   "bin": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc && pkg . --targets node18-macos-arm64 --debug --public-packages '*'",
-    "prepublishOnly": "yarn run build",
+    "build": "tsc",
+    "prepublishOnly": "tsc",
     "start": "tsx src/index.ts"
   },
   "dependencies": {
@@ -34,17 +38,7 @@
     "@types/cli-spinner": "^0.2.3",
     "@types/commander": "^2.12.5",
     "@types/node": "^24.5.1",
-    "pkg": "^5.8.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
-  },
-  "pkg": {
-    "outputPath": "bin",
-    "patches": {
-      "./node_modules/openai/_shims/index.js": [
-        "require('openai/_shims/auto/runtime')",
-        "require('openai/_shims/node-runtime')"
-      ]
-    }
   }
 }

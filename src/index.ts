@@ -258,12 +258,12 @@ function validateDiff(diff: string): void {
     throw new Error('No staged changes found.');
   }
 
-  if (diff.length > MAX_DIFF_LENGTH) {
-    throw new Error(
-      `Diff is too large (${diff.length} characters, max ${MAX_DIFF_LENGTH}).\n` +
-        'Please commit changes in smaller, focused chunks.',
-    );
-  }
+  // if (diff.length > MAX_DIFF_LENGTH) {
+  //   throw new Error(
+  //     `Diff is too large (${diff.length} characters, max ${MAX_DIFF_LENGTH}).\n` +
+  //       'Please commit changes in smaller, focused chunks.',
+  //   );
+  // }
 }
 
 async function main() {
